@@ -109,7 +109,7 @@ const SubjectList = () => {
       <Breadcrumb />
       <h1 className="page-title">Subjects</h1>
       <div className="intro-row">
-        <p> Quick access for essential subject metrics and management tools.</p>
+        <p> Quick access for essential subject metrics and management tool.</p>
         <div className="search-field">
           <Search className="search-icon" />
           <Input
