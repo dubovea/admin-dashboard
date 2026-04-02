@@ -3,11 +3,15 @@ import {
   CLOUDINARY_UPLOAD_PRESET,
   MAX_FILE_SIZE,
 } from "@/assets/constants";
-import { UploadWidgetValue } from "@/types";
+import { UploadWidgetProps, UploadWidgetValue } from "@/types";
 import { UploadCloud } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const UploadWidget = ({ value = null, onChange, disabled = false }) => {
+const UploadWidget = ({
+  value = null,
+  onChange,
+  disabled = false,
+}: UploadWidgetProps) => {
   const widgetRef = useRef<CloudinaryWidget | null>(null);
   const onChangeRef = useRef(onChange);
 
@@ -20,7 +24,9 @@ const UploadWidget = ({ value = null, onChange, disabled = false }) => {
   };
 
   useEffect(() => {
-    onChange.current = onChange;
+    if (onChange) {
+      onChangeRef.current = onChange;
+    }
   }, [onChange]);
 
   useEffect(() => {

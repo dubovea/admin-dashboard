@@ -1,3 +1,4 @@
+import * as z from "zod";
 import { CreateView } from "@/components/refine-ui/views/create-view.tsx";
 import { Breadcrumb } from "@/components/refine-ui/layout/breadcrumb.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -10,9 +11,9 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm } from "@refinedev/react-hook-form";
 import { classSchema } from "@/lib/schema.ts";
-import * as z from "zod";
+import { UploadWidgetValue } from "@/types";
 
 import {
   Form,
@@ -23,7 +24,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label.tsx";
 import {
   Select,
   SelectContent,
@@ -34,25 +34,14 @@ import {
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Loader2 } from "lucide-react";
 import UploadWidget from "@/components/upload-widget";
-
 const Create = () => {
   const back = useBack();
 
-  const form = useForm<z.infer<typeof classSchema>>({
+  const form = useForm({
     resolver: zodResolver(classSchema),
     refineCoreProps: {
       resource: "classes",
       action: "create",
-    },
-    defaultValues: {
-      status: "active",
-      name: "",
-      description: "",
-      subjectId: 0,
-      teacherId: "",
-      capacity: 0,
-      bannerUrl: "",
-      bannerCldPubId: "",
     },
   });
 
@@ -96,7 +85,10 @@ const Create = () => {
 
   const bannerPublicId = form.watch("bannerCldPubId");
 
-  const setBannerImage = (file: File | null, field: any) => {
+  const setBannerImage = (
+    file: UploadWidgetValue,
+    field: { onChange: (value: string) => void },
+  ) => {
     if (!file) {
       field.onChange("");
       form.setValue("bannerCldPubId", "", {
@@ -156,9 +148,10 @@ const Create = () => {
                                 }
                               : null
                           }
-                          onChange={(file: File, field: unknown) =>
-                            setBannerImage(file, field)
-                          }
+                          onChange={(
+                            file: UploadWidgetValue,
+                            field: { onChange: (value: string) => void },
+                          ) => setBannerImage(file, field)}
                         />
                       </FormControl>
                       <FormMessage />
