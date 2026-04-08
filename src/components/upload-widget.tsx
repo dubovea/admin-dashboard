@@ -24,9 +24,7 @@ const UploadWidget = ({
   };
 
   useEffect(() => {
-    if (onChange) {
-      onChangeRef.current = onChange;
-    }
+    onChangeRef.current = onChange;
   }, [onChange]);
 
   useEffect(() => {

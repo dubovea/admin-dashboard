@@ -2,7 +2,7 @@ import * as z from "zod";
 import { CreateView } from "@/components/refine-ui/views/create-view.tsx";
 import { Breadcrumb } from "@/components/refine-ui/layout/breadcrumb.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { useBack } from "@refinedev/core";
+import { useBack, useList } from "@refinedev/core";
 import { Separator } from "@/components/ui/separator.tsx";
 import {
   Card,
@@ -13,7 +13,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
 import { classSchema } from "@/lib/schema.ts";
-import { UploadWidgetValue } from "@/types";
+import { Subject, UploadWidgetValue, User } from "@/types";
 
 import {
   Form,
@@ -46,6 +46,7 @@ const Create = () => {
   });
 
   const {
+    refineCore: { onFinish },
     handleSubmit,
     formState: { isSubmitting, errors },
     control,
@@ -53,40 +54,43 @@ const Create = () => {
 
   const onSubmit = async (values: z.infer<typeof classSchema>) => {
     try {
-      console.log(values);
+      await onFinish(values);
     } catch (error) {
       console.error("Error creating class:", error);
     }
   };
 
-  const teachers = [
-    {
-      id: 1,
-      name: "John Doe",
+  const { query: subjectsQuery } = useList<Subject>({
+    resource: "subjects",
+    pagination: {
+      pageSize: 100,
     },
-    {
-      id: 2,
-      name: "Jane Doe",
-    },
-  ];
+  });
 
-  const subjects = [
-    {
-      id: 1,
-      name: "Math",
-      code: "MATH",
+  const { query: teachersQuery } = useList<User>({
+    resource: "users",
+    filters: [
+      {
+        field: "role",
+        operator: "eq",
+        value: "teacher",
+      },
+    ],
+    pagination: {
+      pageSize: 100,
     },
-    {
-      id: 2,
-      name: "English",
-      code: "ENG",
-    },
-  ];
+  });
+
+  const subjectsData = subjectsQuery?.data?.data || [];
+  const subjectsIsLoading = subjectsQuery.isLoading;
+
+  const teachersData = teachersQuery?.data?.data || [];
+  const teacherIsLoading = teachersQuery.isLoading;
 
   const bannerPublicId = form.watch("bannerCldPubId");
 
   const setBannerImage = (
-    file: UploadWidgetValue,
+    file: UploadWidgetValue | null,
     field: { onChange: (value: string) => void },
   ) => {
     if (!file) {
@@ -97,7 +101,6 @@ const Create = () => {
       });
       return;
     }
-
     field.onChange(file.url);
     form.setValue("bannerCldPubId", file.publicId, {
       shouldValidate: true,
@@ -148,10 +151,9 @@ const Create = () => {
                                 }
                               : null
                           }
-                          onChange={(
-                            file: UploadWidgetValue,
-                            field: { onChange: (value: string) => void },
-                          ) => setBannerImage(file, field)}
+                          onChange={(file: UploadWidgetValue | null) =>
+                            setBannerImage(file, field)
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -197,6 +199,7 @@ const Create = () => {
                             field.onChange(Number(value))
                           }
                           value={field.value?.toString()}
+                          disabled={subjectsIsLoading}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -204,7 +207,7 @@ const Create = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {subjects.map((subject) => (
+                            {subjectsData.map((subject) => (
                               <SelectItem
                                 key={subject.id}
                                 value={subject.id.toString()}
@@ -230,6 +233,7 @@ const Create = () => {
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          disabled={teacherIsLoading}
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -237,7 +241,7 @@ const Create = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {teachers.map((teacher) => (
+                            {teachersData.map((teacher) => (
                               <SelectItem
                                 key={teacher.id}
                                 value={teacher.id.toString()}
